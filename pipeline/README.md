@@ -30,9 +30,9 @@ bash pipeline/setup.sh   # voice model (~350 MB from GitHub), kokoro-onnx, three
     "color": "#1d4fd8",
     "rows": [
       {"icon": "calendar", "label": "Founded", "value": "1969", "at": [2, "founded"]},
+      {"icon": "ball", "label": "Teams", "value": "Rec leagues + travel teams", "at": [2, "rec and travel"]},
       {"icon": "people", "label": "Age groups", "value": "U6 to U18", "at": [2, "under six"]},
-      {"icon": "ball", "label": "Teams", "value": "Rec leagues + travel teams", "at": [2, "rec leagues"]},
-      {"icon": "pin", "label": "Home field", "value": "Norfeldt / Charter Oak Park", "at": [2, "norfeldt"]}
+      {"icon": "pin", "label": "Home field", "value": "Norfeldt / Charter Oak Park", "at": [2, "charter oak"]}
     ]
   },
   "stat": {"n": "13", "label": "age groups,\n[no gaps]", "at": [3, "thirteen"]},
@@ -40,7 +40,7 @@ bash pipeline/setup.sh   # voice model (~350 MB from GitHub), kokoro-onnx, three
   "cta": "See the full profile",
   "narration": [
     "Playing soccer in West Hartford?",
-    "West Hartford Soccer Club was founded in 1969, with teams from under six to under eighteen, rec leagues and travel teams, at Norfeldt and Charter Oak Park.",
+    "Founded in 1969, West Hartford Soccer Club runs rec and travel teams, from under six to under eighteen, at Charter Oak Park.",
     "That's thirteen age groups, with no gaps.",
     "See the full profile at C T Soccer Hub dot com."
   ]
@@ -85,6 +85,7 @@ Already covered, so not repeated: the site overview promo and the 10 feature vid
 
 ## Posting
 
+- **Pushing**: run `git pull --rebase origin main` first, then `timeout 300 git push origin main`. If a push hangs and times out, run it once more; it usually goes through the second time.
 - **Hosting**: commit each video as `videos/<posting date YYYY-MM-DD>/<slug>.mp4`, push to `main`, and use `https://raw.githubusercontent.com/alexemden-png/CT-Soccer/main/videos/<date>/<slug>.mp4`. Check that it returns HTTP 200 with the right size before posting.
 - **Buffer**: organization "My organization". Instagram `ctsoccerhub` = `6aea45e6e29c69a171509efa` (type reel, shouldShareToFeed true). YouTube `CT Soccer` = `6ae7e06fe29c69a17130c4f7` (title ending ` | CT Soccer Hub`, 100 characters or fewer; categoryId `17`; madeForKids false; privacy public). Mode `customScheduled`, schedulingType `automatic`.
 - **Slots**: 9:00 AM, 1:00 PM and 7:00 PM America/New_York, at least 3 posts a day on each channel. Build `dueAt` with Python `zoneinfo` so the UTC offset is right on both sides of daylight saving time.
