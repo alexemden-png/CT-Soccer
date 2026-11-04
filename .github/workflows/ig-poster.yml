@@ -1,0 +1,43 @@
+name: Instagram poster
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # check the queue every 10 minutes (GitHub may run it a few minutes late)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only list what would be posted"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ig-poster
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Post due Reels
+        id: post
+        env:
+          IG_TOKEN_CTSOCCERHUB: ${{ secrets.IG_TOKEN_CTSOCCERHUB }}
+          IG_TOKEN_CLIPTHEORY67: ${{ secrets.IG_TOKEN_CLIPTHEORY67 }}
+        run: python3 poster/post_due.py ${{ inputs.dry_run && '--dry-run' || '' }}
+      - name: Save results
+        if: always() && steps.post.outputs.changed == 'true'
+        run: |
+          git config user.name "ig-poster"
+          git config user.email "ig-poster@users.noreply.github.com"
+          git add -A poster/queue poster/done
+          git commit -m "Instagram poster: update queue"
+          for i in 1 2 3; do
+            git pull --rebase -q origin main && git push -q origin HEAD:main && break
+            sleep 5
+          done
+
