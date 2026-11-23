@@ -75,8 +75,8 @@ bash pipeline/setup.sh   # voice model (~350 MB from GitHub), kokoro-onnx, three
 
 A topic is done when `videos/**/<slug>.mp4` exists in this repo. Mix series within a day.
 
-1. **Club spotlights** (`club-<page slug>`): the 37 `/clubs/<slug>.html` pages listed in https://ctsoccerhub.com/sitemap.xml.
-2. **News** (`/news/<slug>.html` in the sitemap): coach spotlights (`coach-<name>`), guides (`guide-<slug>`), season reviews. Skip a news spotlight of a club that already has a `club-` video.
+1. **Club spotlights** (`club-<page slug>`): the `/clubs/<slug>.html` pages listed in `pipeline/sitemap.xml` (a saved copy of https://ctsoccerhub.com/sitemap.xml).
+2. **News** (`/news/<slug>.html` in `pipeline/sitemap.xml`): coach spotlights (`coach-<name>`), guides (`guide-<slug>`), season reviews. Skip a news spotlight of a club that already has a `club-` video.
 3. **Tournaments** (`tournament-<name>`): one per video, from https://ctsoccerhub.com/tournaments.html.
 4. **Coaching courses** (`course-<name>`): upcoming ones from https://ctsoccerhub.com/coaching-clinics.html.
 5. **Towns** (`town-<town>`): clubs in one town, from https://ctsoccerhub.com/clubs-by-town.html, if the page shows them.
@@ -87,7 +87,7 @@ Already covered, so not repeated: the site overview promo and the 10 feature vid
 
 - **Pushing**: run `git pull --rebase origin main` first, then `timeout 300 git push origin main`. If a push hangs and times out, run it once more; it usually goes through the second time.
 - **Hosting**: commit each video as `videos/<posting date YYYY-MM-DD>/<slug>.mp4`, push to `main`, and use `https://raw.githubusercontent.com/alexemden-png/CT-Soccer/main/videos/<date>/<slug>.mp4`. Check that it returns HTTP 200 with the right size before posting.
-- **Buffer**: organization "My organization". Instagram `ctsoccerhub` = `6aea45e6e29c69a171509efa` (type reel, shouldShareToFeed true). YouTube `CT Soccer` = `6ae7e06fe29c69a17130c4f7` (title ending ` | CT Soccer Hub`, 100 characters or fewer; categoryId `17`; madeForKids false; privacy public). Mode `customScheduled`, schedulingType `automatic`.
+- **Buffer**: organization "My organization". Instagram `ctsoccerhub` = `6aea45e6e29c69a171509efa` (type reel, shouldShareToFeed true). YouTube `CT Soccer` = `6aeb9563e29c69a17162fcde` (title ending ` | CT Soccer Hub`, 100 characters or fewer; categoryId `17`; madeForKids false; privacy public). Mode `customScheduled`, schedulingType `automatic`.
 - **Slots**: 9:00 AM, 1:00 PM and 7:00 PM America/New_York, at least 3 posts a day on each channel. Build `dueAt` with Python `zoneinfo` so the UTC offset is right on both sides of daylight saving time.
 - **Buffer free plan**: at most 10 scheduled posts per channel, so schedule no more than two days ahead.
 - **Instagram caption**:
