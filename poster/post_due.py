@@ -17,6 +17,14 @@ A failed post is retried on later runs up to MAX_ATTEMPTS times.
 
 Tokens come from environment variables, one per account (see ACCOUNTS).
 Run with --dry-run to see what would be posted without calling Instagram.
+Run with --check-tokens to test each token against its account without posting.
+
+Two kinds of token work:
+  - Meta's system-user tokens (start with "EAA"), from the app's
+    "API setup with Unified login". They never expire and use graph.facebook.com
+    with the account's Instagram user ID.
+  - Instagram user tokens (start with "IG"), from the older "API setup with
+    Instagram login". They last 60 days and use graph.instagram.com.
 """
 import datetime as dt
 import json
@@ -31,10 +39,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 QUEUE = ROOT / "queue"
 DONE = ROOT / "done"
-API = "https://graph.instagram.com/" + os.environ.get("IG_API_VERSION", "v23.0")
+API_VERSION = os.environ.get("IG_API_VERSION", "v23.0")
+# account -> (secret holding its token, Instagram user ID shown in the Meta app)
 ACCOUNTS = {
-    "ctsoccerhub": "IG_TOKEN_CTSOCCERHUB",
-    "clip.theory67": "IG_TOKEN_CLIPTHEORY67",
+    "ctsoccerhub": ("IG_TOKEN_CTSOCCERHUB", "17841435711112320"),
+    "clip.theory67": ("IG_TOKEN_CLIPTHEORY67", "17841437804473042"),
 }
 MAX_LATE_HOURS = 6
 MAX_ATTEMPTS = 3
@@ -57,11 +66,28 @@ def call(method, url, params):
         raise RuntimeError(f"HTTP {e.code}: {body[:500]}") from None
 
 
+def is_instagram_token(token):
+    return token.startswith("IG")
+
+
+def resolve(token, account):
+    """Return (api base URL, Instagram user ID) after checking the token can act as `account`."""
+    if is_instagram_token(token):
+        api = f"https://graph.instagram.com/{API_VERSION}"
+        me = call("GET", f"{api}/me", {"fields": "user_id,username", "access_token": token})
+        user_id = me.get("user_id") or me.get("id")
+        username = me.get("username")
+    else:
+        api = f"https://graph.facebook.com/{API_VERSION}"
+        user_id = ACCOUNTS[account][1]
+        username = call("GET", f"{api}/{user_id}", {"fields": "username", "access_token": token}).get("username")
+    if username and username.lower() != account.lower():
+        raise RuntimeError(f"token belongs to @{username}, not @{account}")
+    return api, user_id
+
+
 def publish(token, item):
-    me = call("GET", f"{API}/me", {"fields": "user_id,username", "access_token": token})
-    user_id = me.get("user_id") or me.get("id")
-    if me.get("username") and me["username"].lower() != item["account"].lower():
-        raise RuntimeError(f"token belongs to @{me['username']}, not @{item['account']}")
+    API, user_id = resolve(token, item["account"])
     container = call("POST", f"{API}/{user_id}/media", {
         "media_type": "REELS",
         "video_url": item["video_url"],
@@ -108,7 +134,29 @@ def validate(item):
     return problems
 
 
+def check_tokens():
+    """Test each token against its account without posting anything."""
+    exit_code = 0
+    for account, (secret, _) in ACCOUNTS.items():
+        token = os.environ.get(secret)
+        if not token:
+            print(f"[no token] @{account}: secret {secret} is not set yet")
+            exit_code = 1
+            continue
+        kind = ("Instagram user token, lasts 60 days" if is_instagram_token(token)
+                else "Meta system-user token, never expires")
+        try:
+            api, user_id = resolve(token, account)
+            print(f"[ok] @{account}: {secret} works ({kind}; {api.split('/')[2]}, ID {user_id})")
+        except Exception as e:
+            print(f"[failed] @{account}: {secret} ({kind}): {str(e)[:300]}")
+            exit_code = 1
+    return exit_code
+
+
 def main():
+    if "--check-tokens" in sys.argv:
+        return check_tokens()
     dry = "--dry-run" in sys.argv
     now = dt.datetime.now(dt.timezone.utc)
     DONE.mkdir(exist_ok=True)
@@ -138,9 +186,10 @@ def main():
             print(f"[would post] {path.name} @{item['account']} ({late_h*60:.0f} min after due)")
             continue
         else:
-            token = os.environ.get(ACCOUNTS[item["account"]])
+            secret = ACCOUNTS[item["account"]][0]
+            token = os.environ.get(secret)
             if not token:
-                print(f"[no token] {path.name}: secret {ACCOUNTS[item['account']]} is not set yet")
+                print(f"[no token] {path.name}: secret {secret} is not set yet")
                 continue
             try:
                 media, link = publish(token, item)

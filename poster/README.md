@@ -36,24 +36,29 @@ or `expired`. To cancel a post, delete its file from `poster/queue/` before it i
 To check what's scheduled, list `poster/queue/`.
 
 Test without posting: Actions → Instagram poster → Run workflow → tick "Only list what would be posted".
+Test the tokens: Actions → Instagram poster → Run workflow → tick "Only test the Instagram tokens".
 
 ## One-time setup
 
+The Meta app is **CT Poster** (app ID 1899738484725586), owned by the **CT Soccer Hub** business portfolio.
+
 1. **Instagram accounts**: each must be a Professional account (Business or Creator).
    In Instagram: Settings → Account type and tools → Switch to professional account.
-2. **Meta app**: at developers.facebook.com → My Apps → Create app. Choose the use case
-   for managing content on Instagram (Instagram API with Instagram Login). The app can stay in
-   Development mode, since it only posts to your own accounts.
-3. **Tokens**: in the app, open Instagram → API setup with Instagram login →
-   Generate access tokens → Add account, and sign in with each Instagram account.
-   If asked, accept the tester invite in Instagram (Settings → Website permissions/Apps and websites → Tester invites).
-   It needs the permissions `instagram_business_basic` and `instagram_business_content_publish`.
-   Copy each account's token.
+2. **Testers**: in the app, App roles → Roles → Add People → Instagram Tester, and add each account.
+   Then, signed in to each account, accept the invite at instagram.com → Settings →
+   Apps and websites → Tester invites.
+3. **Tokens**: in the app, Use cases → Instagram API → Customize → API setup with Unified login.
+   Meta requires a business portfolio for this, and new apps no longer get the older
+   "API setup with Instagram login". Step 1 needs a configuration ("Instagram API (Unified Login)",
+   system-user token that never expires). In step 2, click **Generate token** next to each account
+   and copy the token.
 4. **GitHub secrets**: in this repo, Settings → Secrets and variables → Actions → New repository secret:
    - `IG_TOKEN_CTSOCCERHUB`: the ctsoccerhub token
    - `IG_TOKEN_CLIPTHEORY67`: the clip.theory67 token
-   - `GH_SECRETS_TOKEN`: a fine-grained GitHub token (github.com/settings/personal-access-tokens)
-     with access to only this repo and the permission **Secrets: Read and write**. The weekly
-     `ig-token-refresh` workflow uses it to renew the Instagram tokens, which last 60 days.
+
+These are Meta system-user tokens: they start with `EAA`, never expire, and are used with
+graph.facebook.com and the account IDs in `post_due.py`, so there is nothing to renew.
+The poster still accepts an older Instagram user token (starts with `IG`, used with
+graph.instagram.com), but such a token lasts only 60 days and would need replacing by hand.
 
 Tokens are never committed or printed. An account without a token is skipped.
