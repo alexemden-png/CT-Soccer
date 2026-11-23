@@ -56,10 +56,9 @@ The Meta app is **CT Poster** (app ID 1899738484725586), owned by the **CT Socce
    - `IG_TOKEN_CTSOCCERHUB`: the ctsoccerhub token
    - `IG_TOKEN_CLIPTHEORY67`: the clip.theory67 token
 
-The poster accepts both Meta system-user tokens (start with `EAA`, never expire, used with
-graph.facebook.com and the account IDs in `post_due.py`) and older Instagram user tokens
-(start with `IG`, last 60 days, used with graph.instagram.com). Only Instagram user tokens need
-the weekly `ig-token-refresh` workflow, which also needs a `GH_SECRETS_TOKEN` secret: a fine-grained
-GitHub token with access to only this repo and **Secrets: Read and write**.
+These are Meta system-user tokens: they start with `EAA`, never expire, and are used with
+graph.facebook.com and the account IDs in `post_due.py`, so there is nothing to renew.
+The poster still accepts an older Instagram user token (starts with `IG`, used with
+graph.instagram.com), but such a token lasts only 60 days and would need replacing by hand.
 
 Tokens are never committed or printed. An account without a token is skipped.
